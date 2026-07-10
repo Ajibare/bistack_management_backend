@@ -4,7 +4,9 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({ origin: 'http://localhost:3000' });
+  app.enableCors({ origin: [
+    'https://bigstack-management.vercel.app/',
+     'http://localhost:3000'], });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix('api');
   await app.listen(3001);
