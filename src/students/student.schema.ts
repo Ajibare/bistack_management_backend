@@ -31,6 +31,12 @@ export class Student {
 
   @Prop({ required: true })
   date: string;
+
+  @Prop({ default: false })
+  completed: boolean;
+
+  @Prop({ default: false })
+  certificateIssued: boolean;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

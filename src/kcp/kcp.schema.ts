@@ -25,6 +25,12 @@ export class Kcp {
 
   @Prop({ required: true })
   age: string;
+
+  @Prop({ default: false })
+  completed: boolean;
+
+  @Prop({ default: false })
+  certificateIssued: boolean;
 }
 
 export const KcpSchema = SchemaFactory.createForClass(Kcp);
