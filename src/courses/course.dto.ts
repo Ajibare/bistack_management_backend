@@ -8,4 +8,7 @@ export class CreateCourseDto {
   @IsString() @IsOptional() duration?: string;
 }
 
+
+
+
 export class UpdateCourseDto extends CreateCourseDto {}
