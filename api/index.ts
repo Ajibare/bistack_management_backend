@@ -1,22 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
-import serverlessExpress from '@vendia/serverless-express';
-import { Callback, Context, Handler } from 'aws-lambda';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express from 'express';
+import express, { type Express } from 'express';
 
-// Lazily-initialized serverless handler. The Express instance is created
-// once on the first cold-start invocation and reused across subsequent
-// warm invocations to avoid re-bootstrapping Nest every time.
-let cachedServer: Handler | null = null;
+let cachedExpressApp: Express | null = null;
 
-async function bootstrapServer(): Promise<Handler> {
+async function bootstrapServer(): Promise<Express> {
   const expressApp = express();
-  const app = await NestFactory.create(
-    AppModule,
-    new ExpressAdapter(expressApp),
-  );
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
   app.enableCors({
     origin: [
@@ -30,19 +22,13 @@ async function bootstrapServer(): Promise<Handler> {
   app.setGlobalPrefix('api');
 
   await app.init();
-
-  return serverlessExpress({ app: expressApp });
+  return expressApp;
 }
 
-const handler: Handler = async (
-  event: unknown,
-  context: Context,
-  callback: Callback,
-) => {
-  if (!cachedServer) {
-    cachedServer = await bootstrapServer();
+export default async function handler(req: any, res: any) {
+  if (!cachedExpressApp) {
+    cachedExpressApp = await bootstrapServer();
   }
-  return cachedServer(event, context, callback);
-};
 
-export default handler;
+  cachedExpressApp(req, res);
+}
