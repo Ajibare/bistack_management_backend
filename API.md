@@ -20,9 +20,10 @@
 10. [KCP (KidsCode Program)](#-kcp-kidscode-program)
 11. [Staff](#-staff)
 12. [Courses](#-courses)
-13. [Data Models Reference](#-data-models-reference)
-14. [Local Development](#-local-development)
-15. [Environment Variables](#-environment-variables)
+13. [Roles](#-roles)
+14. [Data Models Reference](#-data-models-reference)
+15. [Local Development](#-local-development)
+16. [Environment Variables](#-environment-variables)
 
 ---
 
@@ -100,6 +101,7 @@ The API uses standard HTTP status codes and NestJS's default error envelope:
 | [KCP](#-kcp-kidscode-program) | `/kcp` | `GET` `GET /:id` `POST` `PUT /:id` `DELETE /:id` |
 | [Staff](#-staff) | `/staff` | `GET` `GET /:id` `POST` `PUT /:id` `DELETE /:id` |
 | [Courses](#-courses) | `/courses` | `GET` `GET /:id` `POST` `PUT /:id` `DELETE /:id` |
+| [Roles](#-roles) | `/roles` | `GET` `GET /:id` `POST` `PUT /:id` `DELETE /:id` |
 
 Every resource follows the **same 5-endpoint CRUD pattern** described below.
 
@@ -329,6 +331,16 @@ Every resource follows the **same 5-endpoint CRUD pattern** described below.
 
 > 💡 The `sn` field is **auto-generated** by the backend from the current document count and cannot be supplied by the client.
 > 💡 `assignedClasses` is a free-text/comma-separated string, so the same staff can be linked to multiple classes or students without a join table.
+> ⚠️ The `UpdateStaffDto` currently requires **all fields** (including optional ones). Send the full staff object on `PUT /staff/:id`.
+
+### Example — filter staff by role (client side)
+
+Because the API doesn't expose query parameters on `/staff`, role-based filtering is done client-side:
+
+```ts
+const tutors = (await api.get<Staff[]>('/staff'))
+  .data.filter((s) => s.role === 'Tutor' && s.status === 'Active');
+```
 
 ---
 
@@ -356,6 +368,61 @@ Every resource follows the **same 5-endpoint CRUD pattern** described below.
 ```
 
 > ⚠️ `name` is **unique** — creating a course with a duplicate name will fail.
+> 💡 Only `name` is required on `POST`. `description`, `price`, and `duration` are optional (default `price` is `0`).
+
+---
+
+## 🏷️ Roles
+
+> Custom role catalog used to classify staff (beyond the built-in `StaffRole` enum). For example, you can add roles like `"Volunteer"`, `"Janitor"`, or `"Intern"`.
+> No auto-generated serial — entries are identified only by their MongoDB `_id`.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/roles` | List all roles (sorted by `createdAt` ASC) |
+| `GET` | `/roles/:id` | Get a single role |
+| `POST` | `/roles` | Create a new role |
+| `PUT` | `/roles/:id` | Update a role |
+| `DELETE` | `/roles/:id` | Delete a role |
+
+### Allowed `status` values
+
+`Active` (default), `Inactive`. (Any string is accepted by the API; these are the values the UI uses.)
+
+### Create — `POST /roles`
+
+```json
+{
+  "name": "Volunteer",
+  "status": "Active"
+}
+```
+
+**Response** (`201 Created`)
+
+```json
+{
+  "_id": "66f1a2b3c4d5e6f7a8b9c0d1",
+  "name": "Volunteer",
+  "status": "Active",
+  "createdAt": "2026-07-12T09:30:00.000Z",
+  "updatedAt": "2026-07-12T09:30:00.000Z"
+}
+```
+
+### Update — `PUT /roles/:id`
+
+The update DTO is identical to create (both require `name`; `status` is optional):
+
+```json
+{
+  "name": "Senior Volunteer",
+  "status": "Active"
+}
+```
+
+> ⚠️ `name` is **unique** — creating a role with a duplicate name will fail.
+> 💡 Roles are **independent** of the `Staff.role` field — the built-in `StaffRole` enum (`Tutor`, `Class Teacher`, etc.) is still valid input for staff. Custom roles created here are for display / filtering only and are **not** auto-linked to staff.
 
 ---
 
@@ -446,10 +513,23 @@ Every resource follows the **same 5-endpoint CRUD pattern** described below.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
+| `_id` | `ObjectId` | auto | MongoDB ID |
 | `name` | `string` | ✅ | **Unique** |
 | `description` | `string` | ❌ | — |
 | `price` | `number` | ❌ | Default `0` |
 | `duration` | `string` | ❌ | — |
+| `createdAt` | `Date` | auto | — |
+| `updatedAt` | `Date` | auto | — |
+
+### Role
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `_id` | `ObjectId` | auto | MongoDB ID |
+| `name` | `string` | ✅ | **Unique** — e.g. `"Volunteer"`, `"Intern"` |
+| `status` | `string` | ❌ | Default `"Active"` |
+| `createdAt` | `Date` | auto | — |
+| `updatedAt` | `Date` | auto | — |
 
 ---
 
