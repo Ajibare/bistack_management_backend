@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateStudentDto {
@@ -10,6 +10,8 @@ export class CreateStudentDto {
   @Type(() => Number) @IsNumber() feeToPay: number;
   @IsString() @IsNotEmpty() duration: string;
   @IsString() @IsNotEmpty() date: string;
+  @IsBoolean() @IsOptional() @Type(() => Boolean) completed?: boolean;
+  @IsBoolean() @IsOptional() @Type(() => Boolean) certificateIssued?: boolean;
 }
 
 export class UpdateStudentDto extends CreateStudentDto {}

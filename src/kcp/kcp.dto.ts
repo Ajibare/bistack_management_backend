@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateKcpDto {
@@ -8,6 +8,8 @@ export class CreateKcpDto {
   @Type(() => Number) @IsNumber() balance: number;
   @IsString() @IsNotEmpty() date: string;
   @IsString() @IsNotEmpty() age: string;
+  @IsBoolean() @IsOptional() @Type(() => Boolean) completed?: boolean;
+  @IsBoolean() @IsOptional() @Type(() => Boolean) certificateIssued?: boolean;
 }
 
 export class UpdateKcpDto extends CreateKcpDto {}

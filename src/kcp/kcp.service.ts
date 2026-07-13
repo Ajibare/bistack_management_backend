@@ -28,11 +28,10 @@ export class KcpService {
   }
 
   async update(id: string, dto: UpdateKcpDto) {
-    const record = await this.model
-      .findByIdAndUpdate(id, dto, { new: true })
-      .exec();
+    const record = await this.model.findById(id).exec();
     if (!record) throw new NotFoundException(`KCP record #${id} not found`);
-    return record;
+    record.set(dto);
+    return record.save();
   }
 
   async remove(id: string) {

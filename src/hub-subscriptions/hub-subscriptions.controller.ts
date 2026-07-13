@@ -12,5 +12,8 @@ export class HubSubscriptionsController {
   @Put(':id') update(@Param('id') id: string, @Body() dto: UpdateHubSubscriptionDto) {
     return this.service.update(id, dto);
   }
+  @Post(':id/invoice') sendInvoice(@Param('id') id: string) {
+    return this.service.sendInvoice(id);
+  }
   @Delete(':id') remove(@Param('id') id: string) { return this.service.remove(id); }
 }
