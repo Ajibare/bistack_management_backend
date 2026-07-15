@@ -6,6 +6,13 @@ import express, { type Express } from 'express';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection, connect as mongooseConnect, connection as mongooseConnection } from 'mongoose';
 
+// Build marker — bump this string whenever you need to force Vercel to skip
+// its transpilation cache and re-run the build. It is logged on every cold
+// start so you can confirm in Vercel logs which version is actually running.
+const BUILD_MARKER = 'bigstack-backend-2026-07-16-v2';
+// eslint-disable-next-line no-console
+console.log(`[startup] build marker: ${BUILD_MARKER}`);
+
 let cachedExpressApp: Express | null = null;
 let bootstrapPromise: Promise<Express> | null = null;
 
