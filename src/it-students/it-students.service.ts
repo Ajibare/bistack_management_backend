@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ItStudent, ItStudentDocument } from './it-student.schema';
 import { CreateItStudentDto, UpdateItStudentDto } from './it-student.dto';
+import { getNextSequence } from '../lib/sequence';
 
 @Injectable()
 export class ItStudentsService {
@@ -22,8 +23,8 @@ export class ItStudentsService {
   }
 
   async create(dto: CreateItStudentDto) {
-    const count = await this.model.countDocuments();
-    const sn = `BST-RG${String(count + 1).padStart(3, '0')}`;
+    const seq = await getNextSequence('it-student');
+    const sn = `BST-RG${String(seq).padStart(3, '0')}`;
     return this.model.create({ ...dto, sn });
   }
 

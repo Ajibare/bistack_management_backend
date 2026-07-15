@@ -81,9 +81,9 @@ export class InvoiceService {
     doc.fontSize(9).text(`Phone: ${this.COMPANY_PHONE}`, 50, 200);
     doc.fontSize(9).text(`Email: ${this.COMPANY_EMAIL}`, 50, 215);
 
-    doc.fontSize(20).text('INVOICE', 400, 50, { align: 'right' });
+    doc.fontSize(20).text('RECEIPT', 400, 50, { align: 'right' });
     doc.moveDown();
-    doc.fontSize(10).text(`Invoice #: ${sn}`);
+    doc.fontSize(10).text(`Receipt #: ${sn}`);
     doc.text(`Date: ${new Date().toISOString().slice(0,10)}`);
     doc.moveDown();
     bodyLines.forEach((l) => { doc.text(l); });
@@ -117,10 +117,10 @@ export class InvoiceService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Invoice email sent to ${to}`);
+      this.logger.log(`Receipt email sent to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send invoice email to ${to}: ${error}`);
-      throw new InternalServerErrorException('Failed to send invoice email');
+      this.logger.error(`Failed to send receipt email to ${to}: ${error}`);
+      throw new InternalServerErrorException('Failed to send receipt email');
     }
   }
 
@@ -159,12 +159,12 @@ export class InvoiceService {
     }
 
     const sn = rec.sn ?? id;
-    const pdf = await this.generatePdfBuffer(`Invoice for ${name}`, lines, amount, sn);
+    const pdf = await this.generatePdfBuffer(`Receipt for ${name}`, lines, amount, sn);
 
     const html = `
       <div style="font-family: sans-serif; font-size: 14px;">
         <p>Hi ${name},</p>
-        <p>Please find attached your invoice (<strong>${sn}</strong>).</p>
+        <p>Please find attached your Receipt (<strong>${sn}</strong>).</p>
         <p>Amount due: <strong>₦${amount.toLocaleString()}</strong></p>
         <hr />
         <h4>Contact With Us</h4>
@@ -175,7 +175,7 @@ export class InvoiceService {
       </div>
     `;
 
-    await this.sendMailWithAttachment(email, `Your Invoice - ${sn}`, html, pdf, `invoice-${sn}.pdf`);
+    await this.sendMailWithAttachment(email, `Your Receipt - ${sn}`, html, pdf, `invoice-${sn}.pdf`);
 
     // update record where applicable
     if (type === 'hub') {
@@ -183,6 +183,6 @@ export class InvoiceService {
       await rec.save();
     }
 
-    return { message: 'Invoice sent', sn };
+    return { message: 'Receipt sent', sn };
   }
 }

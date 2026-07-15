@@ -5,6 +5,7 @@ import { HubSubscription, HubSubscriptionDocument } from './hub-subscription.sch
 import { CreateHubSubscriptionDto, UpdateHubSubscriptionDto } from './hub-subscription.dto';
 import nodemailer from 'nodemailer';
 import { InvoiceService } from '../finance/invoice.service';
+import { getNextSequence } from '../lib/sequence';
 
 @Injectable()
 export class HubSubscriptionsService {
@@ -67,8 +68,8 @@ export class HubSubscriptionsService {
   }
 
   async create(dto: CreateHubSubscriptionDto) {
-    const count = await this.model.countDocuments();
-    const sn = `BST-HB${String(count + 1).padStart(3, '0')}`;
+    const seq = await getNextSequence('hub-subscription');
+    const sn = `BST-HB${String(seq).padStart(3, '0')}`;
     const expiresAt = dto.isMonthly && dto.months
       ? this.computeExpiryDate(dto.date, dto.months)
       : dto.expiresAt;
@@ -94,10 +95,10 @@ export class HubSubscriptionsService {
       return await this.invoiceService.sendInvoiceFor('hub', id);
     } catch (err) {
       if ((err as any).response?.status === 400 || (err as Error).message === 'SMTP_NOT_CONFIGURED') {
-        throw new BadRequestException('SMTP is not configured on the server. Configure SMTP to send invoices.');
+        throw new BadRequestException('SMTP is not configured on the server. Configure SMTP to send receipts.');
       }
-      this.logger.error(`Error sending invoice for ${id}: ${err}`);
-      throw new InternalServerErrorException('Failed to send invoice email');
+      this.logger.error(`Error sending receipt for ${id}: ${err}`);
+      throw new InternalServerErrorException('Failed to send receipt email');
     }
   }
 
