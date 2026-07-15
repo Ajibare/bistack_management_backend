@@ -7,35 +7,50 @@ import * as mongoose from 'mongoose';
  * rather than ObjectIds. The mongodb driver's strict `Filter<{ _id: ObjectId }>` typing
  * does not allow this, so we cast the collection to `any` for the queries.
  *
- * On Vercel/serverless the Mongoose connection can drop between invocations.
- * This function transparently re-establishes a disconnected connection before
- * touching the collection, so cold/warm invocations both work.
+ * IMPORTANT: On Vercel/serverless, the global `mongoose.connection` can be
+ * `undefined` if the first request arrives before MongooseModule's
+ * onModuleInit has fully wired up the connection. To be robust, this function:
+ *   1. Returns the existing `mongoose.connection` if it's already connected.
+ *   2. Awaits its `asPromise()` if the connection is in flight.
+ *   3. As a last resort, performs a direct `mongoose.connect()` with the
+ *      configured MONGO_URI so the call still works on cold starts.
  */
 export async function getNextSequence(name: string): Promise<number> {
-  const conn = mongoose.connection;
-  if (!conn) {
-    throw new Error(
-      `getNextSequence("${name}"): mongoose.connection is undefined. ` +
-        `MongooseModule.forRoot() was never invoked or the module failed to load.`,
-    );
-  }
+  const uri =
+    process.env.MONGO_URI ?? 'mongodb://localhost:27017/bigstack_management';
 
-  // readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
-  // On Vercel, after a Lambda is idle, the connection drops. Wait for reconnect
-  // instead of letting the call fail with a confusing driver error.
-  if (conn.readyState !== 1) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[sequence] Mongoose not connected (readyState=${conn.readyState}). ` +
-        `Waiting for reconnect before incrementing counter "${name}".`,
-    );
-    await conn.asPromise();
+  // Step 1+2: if a connection already exists (even if still connecting),
+  // wait for it to be ready.
+  let conn = mongoose.connection;
+  if (conn && conn.readyState === 1) {
+    // Already connected — proceed.
+  } else {
+    if (conn) {
+      // Connection exists but isn't ready — wait for it.
+      try {
+        await conn.asPromise();
+      } catch {
+        // Fall through to direct connect below.
+      }
+    }
+
+    // Step 3: if we still don't have a ready connection, do a direct connect.
+    conn = mongoose.connection;
+    if (!conn || conn.readyState !== 1) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[sequence] No ready Mongoose connection (state=${conn?.readyState}). ` +
+          `Performing direct connect for counter "${name}".`,
+      );
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 10_000 });
+      conn = mongoose.connection;
+    }
   }
 
   // The mongodb driver types `_id` as ObjectId, but the `counters` collection
   // uses friendly string IDs (e.g. "student", "staff"). Cast to `any` to bypass.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const coll = conn.collection('counters') as any;
+  const coll = conn!.collection('counters') as any;
 
   const res = await coll.findOneAndUpdate(
     { _id: name },

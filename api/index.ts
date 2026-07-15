@@ -9,9 +9,13 @@ import { Connection, connect as mongooseConnect, connection as mongooseConnectio
 // Build marker — bump this string whenever you need to force Vercel to skip
 // its transpilation cache and re-run the build. It is logged on every cold
 // start so you can confirm in Vercel logs which version is actually running.
-const BUILD_MARKER = 'bigstack-backend-2026-07-16-v2';
+const BUILD_MARKER = 'bigstack-backend-2026-07-16-v3';
 // eslint-disable-next-line no-console
 console.log(`[startup] build marker: ${BUILD_MARKER}`);
+// eslint-disable-next-line no-console
+console.log(
+  `[startup] MONGO_URI host: ${(process.env.MONGO_URI ?? '(unset)').replace(/\/\/[^@]*@/, '//***@')}`,
+);
 
 let cachedExpressApp: Express | null = null;
 let bootstrapPromise: Promise<Express> | null = null;
