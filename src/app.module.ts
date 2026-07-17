@@ -9,6 +9,7 @@ import { CoursesModule } from './courses/courses.module';
 import { KcpModule } from './kcp/kcp.module';
 import { StaffModule } from './staff/staff.module';
 import { RolesModule } from './roles/roles.module';
+import { SequenceModule } from './sequence/sequence.module';
 
 @Module({
   imports: [
