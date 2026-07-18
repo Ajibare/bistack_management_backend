@@ -3,13 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Staff, StaffDocument } from './staff.schema';
 import { CreateStaffDto, UpdateStaffDto } from './staff.dto';
-import { getNextSequence } from '../lib/sequence';
+import { SequenceService } from '../sequence/sequence.service';
 
 @Injectable()
 export class StaffService {
   constructor(
     @InjectModel(Staff.name)
     private readonly model: Model<StaffDocument>,
+    private readonly sequenceService: SequenceService,
   ) {}
 
   findAll() {
@@ -23,7 +24,7 @@ export class StaffService {
   }
 
   async create(dto: CreateStaffDto) {
-    const seq = await getNextSequence('staff');
+    const seq = await this.sequenceService.getNextSequence('staff');
     const sn = `BST-SF${String(seq).padStart(3, '0')}`;
     return this.model.create({ ...dto, sn });
   }

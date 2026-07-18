@@ -5,7 +5,7 @@ import { HubSubscription, HubSubscriptionDocument } from './hub-subscription.sch
 import { CreateHubSubscriptionDto, UpdateHubSubscriptionDto } from './hub-subscription.dto';
 import nodemailer from 'nodemailer';
 import { InvoiceService } from '../finance/invoice.service';
-import { getNextSequence } from '../lib/sequence';
+import { SequenceService } from '../sequence/sequence.service';
 
 @Injectable()
 export class HubSubscriptionsService {
@@ -24,6 +24,7 @@ export class HubSubscriptionsService {
     @InjectModel(HubSubscription.name)
     private readonly model: Model<HubSubscriptionDocument>,
     private readonly invoiceService: InvoiceService,
+    private readonly sequenceService: SequenceService,
   ) {
     const interval = Number(process.env.REMINDER_CHECK_INTERVAL_MS ?? 86400000);
     setInterval(() => void this.runExpiryReminders(), interval);
@@ -68,7 +69,7 @@ export class HubSubscriptionsService {
   }
 
   async create(dto: CreateHubSubscriptionDto) {
-    const seq = await getNextSequence('hub-subscription');
+    const seq = await this.sequenceService.getNextSequence('hub-subscription');
     const sn = `BST-HB${String(seq).padStart(3, '0')}`;
     const expiresAt = dto.isMonthly && dto.months
       ? this.computeExpiryDate(dto.date, dto.months)

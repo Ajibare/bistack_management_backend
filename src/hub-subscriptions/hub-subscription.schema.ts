@@ -5,7 +5,7 @@ export type HubSubscriptionDocument = HydratedDocument<HubSubscription>;
 
 @Schema({ timestamps: true, collection: 'hub_subscriptions' })
 export class HubSubscription {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   sn: string;
 
   @Prop({ required: true })

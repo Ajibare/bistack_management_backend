@@ -4,9 +4,10 @@ import { HubSubscription, HubSubscriptionSchema } from './hub-subscription.schem
 import { HubSubscriptionsService } from './hub-subscriptions.service';
 import { HubSubscriptionsController } from './hub-subscriptions.controller';
 import { FinanceModule } from '../finance/finance.module';
+import { SequenceModule } from '../sequence/sequence.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: HubSubscription.name, schema: HubSubscriptionSchema }]), FinanceModule],
+  imports: [MongooseModule.forFeature([{ name: HubSubscription.name, schema: HubSubscriptionSchema }]), FinanceModule, SequenceModule],
   controllers: [HubSubscriptionsController],
   providers: [HubSubscriptionsService],
 })

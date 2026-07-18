@@ -15,7 +15,8 @@ export type StaffRole =
 
 @Schema({ timestamps: true, collection: 'staff' })
 export class Staff {
-  @Prop({ required: true, unique: true })
+  // @Prop({ required: true, unique: true })
+  @Prop({ required: true})
   sn: string;
 
   @Prop({ required: true })

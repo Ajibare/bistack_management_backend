@@ -5,7 +5,7 @@ export type ItStudentDocument = HydratedDocument<ItStudent>;
 
 @Schema({ timestamps: true, collection: 'it_students' })
 export class ItStudent {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   sn: string;
 
   @Prop({ required: true })

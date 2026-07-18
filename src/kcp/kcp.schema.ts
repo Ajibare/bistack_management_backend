@@ -5,7 +5,7 @@ export type KcpDocument = HydratedDocument<Kcp>;
 
 @Schema({ timestamps: true, collection: 'kcp' })
 export class Kcp {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   sn: string;
 
   @Prop({ required: true })

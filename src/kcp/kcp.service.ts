@@ -3,13 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Kcp, KcpDocument } from './kcp.schema';
 import { CreateKcpDto, UpdateKcpDto } from './kcp.dto';
-import { getNextSequence } from '../lib/sequence';
+import { SequenceService } from '../sequence/sequence.service';
 
 @Injectable()
 export class KcpService {
   constructor(
     @InjectModel(Kcp.name)
     private readonly model: Model<KcpDocument>,
+    private readonly sequenceService: SequenceService,
   ) {}
 
   findAll() {
@@ -23,7 +24,7 @@ export class KcpService {
   }
 
   async create(dto: CreateKcpDto) {
-    const seq = await getNextSequence('kcp');
+    const seq = await this.sequenceService.getNextSequence('kcp');
     const sn = `BST-KC${String(seq).padStart(3, '0')}`;
     return this.model.create({ ...dto, sn });
   }
