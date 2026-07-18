@@ -10,6 +10,7 @@ import { KcpModule } from './kcp/kcp.module';
 import { StaffModule } from './staff/staff.module';
 import { RolesModule } from './roles/roles.module';
 import { SequenceModule } from './sequence/sequence.module';
+import { DropUniqueSnIndexesMigration } from './migrations/drop-unique-sn-indexes';
 
 @Module({
   imports: [
@@ -49,5 +50,6 @@ import { SequenceModule } from './sequence/sequence.module';
     StaffModule,
     RolesModule,
   ],
+  providers: [DropUniqueSnIndexesMigration],
 })
 export class AppModule {}
